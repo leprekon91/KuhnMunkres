@@ -32,11 +32,21 @@
   )
 )
 
+; return a mask list of zeroes of the list that was received
+(define maskList (lambda(lst) 
+      (cond 
+        ( (null? lst) (list))
+        ( ( = ( car lst ) 0) ( cons 1 ( maskList (cdr lst) ) ) )
+        ( else ( cons 0 ( maskList (cdr lst) ) ) )
+      )
+  )
+)
+
 ;---------------------------------------------------------------------------------------------------
 ; STEPS
 ;---------------------------------------------------------------------------------------------------
 
-; For Each Row Of The Cost Matrix: find minimum element and subtract
+; Step 1: For Each Row Of The Cost Matrix: find minimum element and subtract
 ; it from each element in the row.
 (define stepOne (lambda(lst)
     (if (null? lst) 
@@ -48,13 +58,29 @@
     )
   )
 )
-
-
+; Step 2: Find a zero (Z) in the resulting matrix.  If there is no starred zero in its row or column,
+; star Z. Repeat for each element in the matrix.
+(define stepTwo (lambda(lst)
+    (if (null? lst) 
+      (list)
+      (cons
+        ( maskList (car lst) ) 
+        ( stepTwo (cdr lst) )
+      )
+    )
+  )
+)
 
 (display "Showing Solution For Cost Matrix: ")
 (display "\n\n")
 (printMatrix CostMatrix)
 (display "\n")
 (display "-|-> Step 1 - processing\n\n")
-(printMatrix ( stepOne CostMatrix ))
+(define stepOneMatrix (stepOne CostMatrix))
+(printMatrix stepOneMatrix)
 (display "-|-> Step 1 - complete\n")
+(display "-|-> Step 2 - processing\n\n")
+(define maskMatrix (stepTwo stepOneMatrix))
+(printMatrix maskMatrix)
+(display "-|-> Step 2 - complete\n")
+
