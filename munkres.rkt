@@ -1,11 +1,12 @@
 #lang racket
 (display "--- Kuhn-Munkres (Hungarian) Algorithm ---\n")
 
-(define CostMatrix (list (list 1 2 1 4) (list 4 5 6 7) (list 7 8 9 0) (list 0 1 2 3)))
+(define CostMatrix (list (list 1 2 1 4) (list 4 5 6 7) (list 7 8 9 1) (list 1 1 2 3)))
 
 ;---------------------------------------------------------------------------------------------------
 ; DEFINITIONS & HELPERS
 ;---------------------------------------------------------------------------------------------------
+
 
 ;print matrix beautifully in console
 (define printMatrix (lambda(mat) 
@@ -49,13 +50,32 @@
       )
   )
 )
-;return a list of zeroes the size of the ginen list
+;return a list of zeroes the size of the given list
 (define padList (lambda(lst) 
   ( if (null? lst)
     (list)
     (cons 0 (padList (cdr lst) ) ) )
   )
 )
+
+;get a matrix and row index and nullify it
+(define nullifyRow (lambda( matrix i ) 
+  (list-set matrix i 
+    (padList (list-ref matrix i))
+  )
+))
+
+;get a matrix and column index and nullify it
+(define nullifyCol (lambda( matrix i ) 
+  (if (null? matrix) 
+    (list)
+    (cons 
+      (list-set (car matrix) i 0)
+      (nullifyCol (cdr matrix) i)
+    )
+  )
+))
+
 ;---------------------------------------------------------------------------------------------------
 ; STEPS
 ;---------------------------------------------------------------------------------------------------
@@ -72,6 +92,7 @@
     )
   )
 )
+
 ; Step 2: Find a zero (Z) in the resulting matrix.  If there is no starred zero in its row or column,
 ; star Z. Repeat for each element in the matrix.
 (define stepTwo (lambda(lst)
@@ -92,8 +113,14 @@
 (display "-|-> Step 1 - processing\n\n")
 (define stepOneMatrix (stepOne CostMatrix))
 (printMatrix stepOneMatrix)
-(display "-|-> Step 1 - complete\n")
+(display "-|-> Step 1 - complete\n\n")
 (display "-|-> Step 2 - processing\n\n")
 (define maskMatrix (stepTwo stepOneMatrix))
 (printMatrix maskMatrix)
-(display "-|-> Step 2 - complete\n")
+(display "-|-> Step 2 - complete\n\n")
+
+(display "-|-> Step 3 - processing\n\n")
+;TODO cover columns with ones in the cost matrix
+(display "-|-> Step 3 - complete\n\n")
+
+(printMatrix (nullifyCol CostMatrix 2))
