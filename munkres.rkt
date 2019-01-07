@@ -7,8 +7,13 @@
 ; DEFINITIONS & HELPERS
 ;---------------------------------------------------------------------------------------------------
 
+;get element i from list j in a matrix
+(define getIJ (lambda(matrix i j) (list-ref (list-ref matrix j) i)))
 
-;print matrix beautifully in console
+;set element i in list j to val
+(define setIJ (lambda(matrix i j val) (list-set (list-ref matrix j) i val)))
+
+;pretty output for matrix in console
 (define printMatrix (lambda(mat) 
   (if (null? mat)
     (display "\n")
@@ -19,24 +24,10 @@
   )))
 )
 
-;find minimum element in list
-(define minInList (lambda(lst) 
-    (apply min lst)
-  )
-)
-
-;find one in a list (for the mask matrix)
-(define findOne (lambda(lst) 
-  (cond 
-    ( (null? lst) #f )
-    ( (= (car lst) 1) #t )
-    ( else ( findOne (cdr lst) ) )
-  )))
-
 ;subtract minimum element from each member of the list
-(define subMinFromList (lambda(lst)
+(define subMinFromRow (lambda(lst)
     (begin
-      (map (lambda(x) (- x (minInList lst))) lst )
+      (map (lambda(x) (- x (apply min lst))) lst )
     )
   )
 )
@@ -45,7 +36,7 @@
 (define maskList (lambda(lst) 
       (cond 
         ( (null? lst) (list))
-        ( ( = ( car lst ) 0) ( cons 1 ( padList (cdr lst) ) ) )
+        ( ( = ( car lst ) 0) ( cons 1 ( maskList (cdr lst) ) ) )
         ( else ( cons 0 ( maskList (cdr lst) ) ) )
       )
   )
@@ -75,7 +66,8 @@
     )
   )
 ))
-
+;simple transpose of a list of lists
+(define transpose (lambda(matrix) (apply map list matrix)))
 ;---------------------------------------------------------------------------------------------------
 ; STEPS
 ;---------------------------------------------------------------------------------------------------
@@ -86,7 +78,7 @@
     (if (null? lst) 
       (list)
       (cons
-        ( subMinFromList (car lst) ) 
+        ( subMinFromRow (car lst) ) 
         ( stepOne (cdr lst) )
       )
     )
@@ -111,7 +103,8 @@
 (printMatrix CostMatrix)
 (display "\n")
 (display "-|-> Step 1 - processing\n\n")
-(define stepOneMatrix (stepOne CostMatrix))
+(define minRowsMatrix (stepOne CostMatrix))
+(define stepOneMatrix (transpose (stepOne (transpose minRowsMatrix))))
 (printMatrix stepOneMatrix)
 (display "-|-> Step 1 - complete\n\n")
 (display "-|-> Step 2 - processing\n\n")
@@ -120,7 +113,10 @@
 (display "-|-> Step 2 - complete\n\n")
 
 (display "-|-> Step 3 - processing\n\n")
-;TODO cover columns with ones in the cost matrix
+;TODO cover matrix zeroes with minimal lines
+; Tick all unassigned rows
+; Tick all (unticked) columns that have zeros in ticked rows
+; Tick all (unticked) rows that have assigned zeros in ticked columns
+; Go back to point 2 unless there are no more columns that need ticking
+; Draw a line through every ticked column and every unticked row.
 (display "-|-> Step 3 - complete\n\n")
-
-(printMatrix (nullifyCol CostMatrix 2))
