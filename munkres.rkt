@@ -6,6 +6,7 @@
 ;;; Simple transpose of a list of lists
 (define transpose (lambda(matrix) (apply map list matrix)))
 
+
 (define (makeIndexList n)
   (if (= n 0)
      (list 0)                       ; base case. Just return (0)
@@ -26,6 +27,12 @@
     )
   )
 )
+
+;;; Remove Duplicates From list [e]
+(define (dedupe e)
+  (if (null? e) '()
+      (cons (car e) (dedupe (filter (lambda (x) (not (equal? x (car e)))) 
+                                    (cdr e))))))
 
 ;;; Count Members of a list
 (define (howMany lst)
@@ -96,6 +103,7 @@
 (define normalizedMatrix (transpose (normalize (transpose (normalize CostMatrix)))))
 (printMatrix normalizedMatrix)
 
+;;; Get a list of indexes representing the location of zeroes in a matrix 
 (define list_zero_indexes (lambda(lst i)
     (if (null? lst) 
       (list)
@@ -106,6 +114,7 @@
     )
   )
 )
+
 
 (define zero_indices (list_zero_indexes (apply append normalizedMatrix) 0))
 ;;; Remove all indices that are row [i] or col [j]
@@ -124,7 +133,8 @@
   )
 )
 
-
+;;; filter indexes so that only cover zeroes remain 
+;;;(basically assign the zeroes into assignment)
 (define starZeroes (lambda(lst)
     (if (null? lst) 
       (list)
@@ -156,18 +166,87 @@
 ;;; else, create additional zeroes:
 
 ;;; find minimal cover:
-
+;---------------------------------------------------------------------------------------------------
 ;;;;1 Tick all unassigned rows
 ;return a list of ticked unassigned rows
-(define tickUnassignedRows (lambda(ass) (filter (lambda(x) (not (hasElement (car( transpose ass)) x))) (makeIndexList (- N 1)))))
-(display (tickUnassignedRows assignment))
+(define tickUnassignedRows (lambda(ass)
+    (filter 
+      (lambda(x) 
+        (not (hasElement (car( transpose ass)) x))
+      ) 
+      (makeIndexList (- N 1))
+    )
+  )
+)
+
+
 ;;;;2 Tick all (unticked) columns that have zeros in ticked rows
+(define tickCols (lambda(tickedRows matrix) 
+    (if(null? tickedRows)
+      (list)
+      (cons 
+        (indexOf 0 (list-ref matrix (car tickedRows)))
+        (tickCols (cdr tickedRows) matrix)
+        )
+    )
+  )
+)
+;;;;3 Tick all (unticked) rows that have {assigned} zeros in ticked columns
+(define FindAssignedZeroByColIndex (lambda(colIndex ass) 
+    (list-ref (car (transpose ass)) (indexOf colIndex (lastElem (transpose ass))))
+  )
+)
 
+(define tickRows (lambda(tickedCols) 
+    (if (null? tickedCols)
+      (list)
+      (cons (FindAssignedZeroByColIndex (car tickedCols) assignment) (tickRows (cdr tickedCols)))
+    )
+  )
+)
 
-(display (indexOf 10 (car normalizedMatrix)))
-;;;;3 Tick all (unticked) rows that have assigned zeros in ticked columns
 ;;;;4 Go back to point 2 unless there are no more columns that need ticking
+;check if there are uncovered zeroes
+(define is-covered (lambda(i j rowCover colCover) (or (hasElement rowCover i) (hasElement colCover j))))
+
+(define no-more-ticks (lambda(lst i rowCover colCover) 
+    (if (null? lst)
+      #t
+      (if 
+        (and 
+          (= (car lst) 0)
+          (not (is-covered (quotient i N) (modulo i N) rowCover colCover))
+        )
+          #f
+          (no-more-ticks (cdr lst) (+ i 1) rowCover colCover)
+      )
+    )
+  )
+)
+
+;minimal cover params: matrix (normalized), assignment
+
+;find unassigned rows
+(define unassignedRows (tickUnassignedRows assignment))
+;initialize row cover with unassigned rows
+
+;loop
+;cover cols using the row cover
+(define tickedCols (tickCols unassignedRows normalizedMatrix))
+;cover new rows using the col cover
+(define tickedRows (append (tickRows tickedCols) unassignedRows))
+(define coveredRows (filter (lambda(x)(not (hasElement tickedRows x))) (makeIndexList (- N 1))))
+(define coveredCols tickedCols)
+;goto loop until no more cols can be covered (no-more-ticks=false)
+(display (no-more-ticks(apply append normalizedMatrix) 0 coveredRows coveredCols))
+(display "\n")
+(display coveredRows)
+(display "\n")
+(display coveredCols)
+(display "\n")
+;;; (define minimalCover (lambda(assignment matrix rowCover colCover) 
+;;;   ()))
 ;;;;5 Draw a line through every ticked column and every unticked row.
-;;; find minimum uncovered element (index is not in starred zeroes list)
+;;; find minimum uncovered element
 ;;; subtract from all uncovered elements the minimum found
 ;;; add minimum to all elements that are covered twice
