@@ -533,7 +533,6 @@ if __name__ == '__main__':
 
     m = Munkres()
     for cost_matrix, expected_total in matrices:
-        print_matrix(cost_matrix, msg='cost matrix')
         indexes = m.compute(cost_matrix)
         total_cost = 0
         for r, c in indexes:
@@ -542,3 +541,17 @@ if __name__ == '__main__':
             print('(%d, %d) -> %d' % (r, c, x))
         print('lowest cost=%d' % total_cost)
         assert expected_total == total_cost
+
+    for costn in [100,200,300,400,500,600,700,800]:
+        one_sample = partial(random.sample, range(costn), costn)
+        sample = [one_sample() for _ in range(costn)]
+        start = time.time()
+        indexes = m.compute(sample)
+        end = time.time()
+        timediff = (end - start) * 1000
+        total_cost = 0
+        for r, c in indexes:
+            x = sample[r][c]
+            total_cost += x
+        print('lowest cost=%d' % total_cost)
+        print str(costn)+"X"+str(costn)+" matrix time: " + str(timediff)
