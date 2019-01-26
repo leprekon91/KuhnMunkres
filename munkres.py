@@ -529,9 +529,10 @@ if __name__ == '__main__':
         ([[10, 10,  8, 11],
           [9,  8,  1, 1],
           [9,  7,  4, 10]],
-         15),
+         15),]
 
     m = Munkres()
+
     for cost_matrix, expected_total in matrices:
         indexes = m.compute(cost_matrix)
         total_cost = 0
