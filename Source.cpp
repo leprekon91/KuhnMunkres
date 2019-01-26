@@ -1,7 +1,30 @@
+#include <ctime>
+#include <cassert>
 #include <iostream>
 #include "Hungarian.h"
-#include <cassert>
+using namespace std;
 
+vector< vector<double> > randMat(int n) {
+
+	vector< vector<double> > mat;
+
+	for (size_t i = 0; i < n; i++)
+	{
+		vector<double> row = {};
+		for (size_t j = 0; j < n; j++)
+			row.insert(row.begin(), ((double)rand() / RAND_MAX)*n);
+		mat.insert(mat.begin(), row);
+	}
+	return mat;
+}
+
+int solve(vector< vector<double> > costMatrix ) {
+	HungarianAlgorithm HungAlgo;
+	vector<int> assignment;
+	double cost = HungAlgo.Solve(costMatrix, assignment);
+	std::cout << "\ncost: " << cost << std::endl;
+	return 0;
+}
 
 int test(vector< vector<double> > costMatrix, double expected) {
 	HungarianAlgorithm HungAlgo;
@@ -19,7 +42,7 @@ int test(vector< vector<double> > costMatrix, double expected) {
 
 int main(void)
 {
-
+	clock_t time_req;
 	test({ 
 			{4, 3, 2, 1},
 			{6, 6, 5, 4},
@@ -53,7 +76,16 @@ int main(void)
 			{9, 8, 1, 1},
 			{9, 7, 4, 10}
 		}, 15);
-
+	for (size_t i = 1; i <= 10; i++)
+	{
+		vector<vector<double>> mat = randMat(i*100);
+		time_req = clock();
+		solve(mat);
+		time_req = clock() - time_req;
+		cout  <<"\n"<< i*100 << "X" << i*100 << " matrix time: " << (float)time_req / (CLOCKS_PER_SEC / 1000) << " ms.\n" << endl;
+	} 
+	
+	
+	
 	return 0;
 }
-
