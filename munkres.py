@@ -531,20 +531,6 @@ if __name__ == '__main__':
           [9,  7,  4, 10]],
          15),
 
-        # Rectangular with DISALLOWED
-        ([[4, 5, 6, DISALLOWED],
-          [1, 9, 12, 11],
-          [DISALLOWED, 5, 4, DISALLOWED],
-          [12, 12, 12, 10]],
-         20),
-
-        # DISALLOWED to force pairings
-        ([[1, DISALLOWED, DISALLOWED, DISALLOWED],
-          [DISALLOWED, 2, DISALLOWED, DISALLOWED],
-          [DISALLOWED, DISALLOWED, 3, DISALLOWED],
-          [DISALLOWED, DISALLOWED, DISALLOWED, 4]],
-         10)]
-
     m = Munkres()
     for cost_matrix, expected_total in matrices:
         print_matrix(cost_matrix, msg='cost matrix')
